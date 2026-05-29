@@ -29,6 +29,61 @@ function costColor(cost) {
   return 'red';
 }
 
+function fmtDuration(ms) {
+  if (ms <= 0) return 'ended';
+  const h = Math.floor(ms / 3600000);
+  const m = Math.floor((ms % 3600000) / 60000);
+  if (h > 0) return `${h}h ${m}m`;
+  return `${m}m`;
+}
+
+function renderSessionBlock(block) {
+  if (!block) return '';
+  const now = Date.now();
+  const start = new Date(block.startTime).getTime();
+  const end = new Date(block.endTime).getTime();
+  const elapsed = now - start;
+  const total = end - start;
+  const remaining = end - now;
+  const timePct = Math.min((elapsed / total) * 100, 100).toFixed(0);
+
+  const burnRow = block.burnRatePerHour > 0
+    ? `<div class="token-row">
+        <span class="token-label">Burn rate</span>
+        <span class="token-value">${fmtCost(block.burnRatePerHour)}/hr</span>
+       </div>`
+    : '';
+
+  const projRow = block.projectedCost
+    ? `<div class="token-row">
+        <span class="token-label">Projected total</span>
+        <span class="token-value">${fmtCost(block.projectedCost)}</span>
+       </div>`
+    : '';
+
+  return `
+    <p class="section-title">Current Session</p>
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px">
+        <span class="card-label" style="margin:0">5-hr block · resets in ${fmtDuration(remaining)}</span>
+        <span style="font-size:11px;color:#555">${timePct}% of window</span>
+      </div>
+      <div class="bar-track" style="height:6px;margin-bottom:14px">
+        <div class="bar-fill" style="width:${timePct}%;background:#3b82f6"></div>
+      </div>
+      <div class="token-row">
+        <span class="token-label">Session cost</span>
+        <span class="token-value ${costColor(block.cost)}">${fmtCost(block.cost)}</span>
+      </div>
+      <div class="token-row">
+        <span class="token-label">Output tokens</span>
+        <span class="token-value">${fmtTokens(block.outputTokens)}</span>
+      </div>
+      ${burnRow}
+      ${projRow}
+    </div>`;
+}
+
 function renderDashboard(d, offline) {
   const totalModelCost = Object.values(d.models).reduce((s, m) => s + m.cost, 0);
 
@@ -71,6 +126,8 @@ function renderDashboard(d, offline) {
       <h1>Claude Usage ${offline ? '<span class="offline-badge">offline</span>' : ''}</h1>
       <button class="refresh-btn" onclick="doRefresh()">Refresh</button>
     </header>
+
+    ${renderSessionBlock(d.currentBlock)}
 
     <div class="grid">
       <div class="card wide">
