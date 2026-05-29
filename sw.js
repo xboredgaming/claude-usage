@@ -1,5 +1,5 @@
-const CACHE = 'claude-usage-v3';
-const STATIC = ['/', '/app.js', '/style.css', '/manifest.json', '/icon.svg'];
+const CACHE = 'claude-usage-v4';
+const STATIC = ['./', './app.js', './style.css', './manifest.json', './icon.svg'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(STATIC)));
@@ -18,8 +18,8 @@ self.addEventListener('activate', e => {
 self.addEventListener('fetch', e => {
   const url = new URL(e.request.url);
 
-  if (url.pathname === '/api/usage') {
-    // Network-first: try live data, fall back to last cached response
+  // Network-first for the GitHub data file
+  if (url.hostname === 'raw.githubusercontent.com') {
     e.respondWith(
       fetch(e.request)
         .then(res => {
