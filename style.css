@@ -157,6 +157,40 @@ footer {
   margin-top: 24px;
 }
 
+/* ── Limit bars ── */
+.limit-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.limit-pct {
+  font-size: 22px;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: -0.5px;
+}
+
+.limit-edit {
+  background: none;
+  border: 1px solid #2a2a2a;
+  color: #555;
+  font-size: 11px;
+  padding: 3px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.limit-edit:active { background: #1a1a1a; }
+
+.reset-label {
+  font-size: 11px;
+  color: #444;
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
 /* ── States ── */
 .loading {
   text-align: center;

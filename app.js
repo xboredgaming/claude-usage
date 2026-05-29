@@ -29,6 +29,25 @@ function costColor(cost) {
   return 'red';
 }
 
+// Default plan limits (output tokens). User can override via tap → prompt.
+// Session: 300K based on observed maximums. Weekly: 2M based on heaviest week.
+const DEFAULT_SESSION_LIMIT = 300000;
+const DEFAULT_WEEKLY_LIMIT  = 2000000;
+
+function getLimit(key, def) {
+  const v = localStorage.getItem(key);
+  return v ? parseInt(v, 10) : def;
+}
+function setLimit(key, val) { localStorage.setItem(key, String(val)); }
+
+function editLimit(key, def, label) {
+  const current = getLimit(key, def);
+  const raw = prompt(`Set ${label} (output tokens).\nCurrent: ${current.toLocaleString()}`, current);
+  if (raw === null) return;
+  const n = parseInt(raw.replace(/,/g, ''), 10);
+  if (!isNaN(n) && n > 0) { setLimit(key, n); doRefresh(); }
+}
+
 function fmtDuration(ms) {
   if (ms <= 0) return 'ended';
   const h = Math.floor(ms / 3600000);
@@ -37,51 +56,74 @@ function fmtDuration(ms) {
   return `${m}m`;
 }
 
-function renderSessionBlock(block) {
-  if (!block) return '';
-  const now = Date.now();
-  const start = new Date(block.startTime).getTime();
-  const end = new Date(block.endTime).getTime();
-  const elapsed = now - start;
-  const total = end - start;
-  const remaining = end - now;
-  const timePct = Math.min((elapsed / total) * 100, 100).toFixed(0);
+function limitBar(used, limit, color) {
+  const pct = Math.min((used / limit) * 100, 100);
+  const barColor = pct >= 90 ? '#f87171' : pct >= 70 ? '#fbbf24' : color;
+  return { pct: pct.toFixed(0), barColor };
+}
 
-  const burnRow = block.burnRatePerHour > 0
-    ? `<div class="token-row">
-        <span class="token-label">Burn rate</span>
-        <span class="token-value">${fmtCost(block.burnRatePerHour)}/hr</span>
-       </div>`
-    : '';
+function renderSessionBlock(block, weeklyOutputTokens) {
+  const sessionLimit = getLimit('sessionLimit', DEFAULT_SESSION_LIMIT);
+  const weeklyLimit  = getLimit('weeklyLimit',  DEFAULT_WEEKLY_LIMIT);
 
-  const projRow = block.projectedCost
-    ? `<div class="token-row">
-        <span class="token-label">Projected total</span>
-        <span class="token-value">${fmtCost(block.projectedCost)}</span>
-       </div>`
-    : '';
+  // Session block
+  const sessionHtml = (() => {
+    if (!block) return `
+      <p class="section-title">Current Session</p>
+      <div class="card" style="color:#444;font-size:13px">No active session block</div>`;
 
-  return `
-    <p class="section-title">Current Session</p>
+    const now = Date.now();
+    const remaining = new Date(block.endTime).getTime() - now;
+    const { pct, barColor } = limitBar(block.outputTokens, sessionLimit, '#3b82f6');
+
+    const burnRow = block.burnRatePerHour > 0
+      ? `<div class="token-row"><span class="token-label">Burn rate</span><span class="token-value">${fmtCost(block.burnRatePerHour)}/hr</span></div>`
+      : '';
+    const projRow = block.projectedCost
+      ? `<div class="token-row"><span class="token-label">Projected</span><span class="token-value">${fmtCost(block.projectedCost)}</span></div>`
+      : '';
+
+    return `
+      <p class="section-title">Current Session &nbsp;<span class="reset-label">resets in ${fmtDuration(remaining)}</span></p>
+      <div class="card">
+        <div class="limit-header">
+          <span class="limit-pct">${pct}% used</span>
+          <button class="limit-edit" onclick="editLimit('sessionLimit',${DEFAULT_SESSION_LIMIT},'session limit')">Edit limit</button>
+        </div>
+        <div class="bar-track" style="height:7px;margin-bottom:14px">
+          <div class="bar-fill" style="width:${pct}%;background:${barColor}"></div>
+        </div>
+        <div class="token-row">
+          <span class="token-label">Output tokens</span>
+          <span class="token-value">${fmtTokens(block.outputTokens)} / ${fmtTokens(sessionLimit)}</span>
+        </div>
+        <div class="token-row">
+          <span class="token-label">Session cost</span>
+          <span class="token-value ${costColor(block.cost)}">${fmtCost(block.cost)}</span>
+        </div>
+        ${burnRow}${projRow}
+      </div>`;
+  })();
+
+  // Weekly block
+  const { pct: wPct, barColor: wColor } = limitBar(weeklyOutputTokens, weeklyLimit, '#3b82f6');
+  const weeklyHtml = `
+    <p class="section-title">Weekly Usage &nbsp;<span class="reset-label">resets Mon</span></p>
     <div class="card">
-      <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px">
-        <span class="card-label" style="margin:0">5-hr block · resets in ${fmtDuration(remaining)}</span>
-        <span style="font-size:11px;color:#555">${timePct}% of window</span>
+      <div class="limit-header">
+        <span class="limit-pct">${wPct}% used</span>
+        <button class="limit-edit" onclick="editLimit('weeklyLimit',${DEFAULT_WEEKLY_LIMIT},'weekly limit')">Edit limit</button>
       </div>
-      <div class="bar-track" style="height:6px;margin-bottom:14px">
-        <div class="bar-fill" style="width:${timePct}%;background:#3b82f6"></div>
-      </div>
-      <div class="token-row">
-        <span class="token-label">Session cost</span>
-        <span class="token-value ${costColor(block.cost)}">${fmtCost(block.cost)}</span>
+      <div class="bar-track" style="height:7px;margin-bottom:14px">
+        <div class="bar-fill" style="width:${wPct}%;background:${wColor}"></div>
       </div>
       <div class="token-row">
         <span class="token-label">Output tokens</span>
-        <span class="token-value">${fmtTokens(block.outputTokens)}</span>
+        <span class="token-value">${fmtTokens(weeklyOutputTokens)} / ${fmtTokens(weeklyLimit)}</span>
       </div>
-      ${burnRow}
-      ${projRow}
     </div>`;
+
+  return sessionHtml + weeklyHtml;
 }
 
 function renderDashboard(d, offline) {
@@ -127,7 +169,7 @@ function renderDashboard(d, offline) {
       <button class="refresh-btn" onclick="doRefresh()">Refresh</button>
     </header>
 
-    ${renderSessionBlock(d.currentBlock)}
+    ${renderSessionBlock(d.currentBlock, d.weeklyOutputTokens || 0)}
 
     <div class="grid">
       <div class="card wide">
