@@ -1,4 +1,4 @@
-const CACHE = 'claude-usage-v1';
+const CACHE = 'claude-usage-v3';
 const STATIC = ['/', '/app.js', '/style.css', '/manifest.json', '/icon.svg'];
 
 self.addEventListener('install', e => {
