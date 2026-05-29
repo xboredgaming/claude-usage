@@ -53,15 +53,7 @@
     }
   ],
   "lastActivity": "2026-05-29",
-  "currentBlock": {
-    "startTime": "2026-05-29T17:00:00.000Z",
-    "endTime": "2026-05-29T22:00:00.000Z",
-    "cost": 7.27742415,
-    "outputTokens": 81177,
-    "totalTokens": 13845508,
-    "burnRatePerHour": 3.220579734980121,
-    "projectedCost": 8.67
-  },
+  "currentBlock": null,
   "weeklyOutputTokens": 756821,
-  "fetchedAt": "2026-05-29T21:34:08.602Z"
+  "fetchedAt": "2026-05-29T22:34:08.564Z"
 }
