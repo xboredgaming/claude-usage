@@ -1,21 +1,21 @@
 {
   "allTime": {
-    "cost": 200.48047049999985,
-    "inputTokens": 68299,
-    "outputTokens": 2632038,
-    "cacheCreationTokens": 17902230,
+    "cost": 200.70609449999986,
+    "inputTokens": 68302,
+    "outputTokens": 2632974,
+    "cacheCreationTokens": 17958650,
     "cacheReadTokens": 344740297
   },
   "today": {
-    "cost": 0,
-    "inputTokens": 0,
-    "outputTokens": 0
+    "cost": 0.22562400000000002,
+    "inputTokens": 3,
+    "outputTokens": 936
   },
-  "thisMonthCost": 3.5704779999999996,
+  "thisMonthCost": 3.7961019999999994,
   "models": {
     "claude-sonnet-4-6": {
-      "cost": 193.6044310499999,
-      "outputTokens": 2611601
+      "cost": 193.8300550499999,
+      "outputTokens": 2612537
     },
     "claude-haiku-4-5-20251001": {
       "cost": 5.21285995,
@@ -27,10 +27,6 @@
     }
   },
   "last7": [
-    {
-      "date": "2026-05-19",
-      "cost": 12.697210199999994
-    },
     {
       "date": "2026-05-20",
       "cost": 4.349509400000002
@@ -54,18 +50,14 @@
     {
       "date": "2026-06-10",
       "cost": 3.5704779999999996
+    },
+    {
+      "date": "2026-06-11",
+      "cost": 0.22562400000000002
     }
   ],
-  "lastActivity": "2026-06-10",
-  "currentBlock": {
-    "startTime": "2026-06-11T01:00:00.000Z",
-    "endTime": "2026-06-11T06:00:00.000Z",
-    "cost": 3.5704779999999996,
-    "outputTokens": 52831,
-    "totalTokens": 5863266,
-    "burnRatePerHour": 5.238507575705087,
-    "projectedCost": 16.3
-  },
-  "weeklyOutputTokens": 52831,
-  "fetchedAt": "2026-06-11T03:34:12.162Z"
+  "lastActivity": "2026-06-11",
+  "currentBlock": null,
+  "weeklyOutputTokens": 53767,
+  "fetchedAt": "2026-06-11T23:21:27.345Z"
 }
